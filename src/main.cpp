@@ -2,75 +2,95 @@
 #include <assert.h>
 
 #include "constants.h"
+#include "stroki.h"
 
-void printData( const char a[], const size_t rows, const size_t colls );
+void printData( const char strData[], const size_t rows, const size_t cols );
 
-void printData( const char a[] );
+void printData( const char strData[] );
 
-void scanData( char a[], const size_t rows, const size_t colls );
+void fscanData( FILE* fp, char* strData[], char* buffer, const size_t rows );
 
-void fscanData( FILE* fp, char a[], const size_t rows, const size_t colls );
+void fscanData( FILE* fp, char* strData[], char* buffer );
 
 int main( const int argc, const char** argv )
 {
-    char text[MAX_STR_NUM][MAX_STR_LENGTH] = {};
+    char buffer[MAX_STR_LENGTH] = {};
 
-    FILE* fp = fopen( "text.txt", "r" );
+    char* text2[MAX_STR_NUM] = {};
 
-    fscanData( fp, text[0], MAX_STR_NUM, MAX_STR_LENGTH );
+    FILE* fp = fopen( "text1.txt", "r" );
 
-    printData( text[0], MAX_STR_NUM, MAX_STR_LENGTH );
+    fscanData( fp, text2, buffer );
+
+    for( int i = 0; i < MAX_STR_NUM / 128; i++ )
+    {
+        printf( "%p %s\n", text2[i],  text2[i] );
+    }
+
+    for( int i = 0; i < MAX_STR_NUM / 128; i++ )
+    {
+        free( text2[i] );
+    }
     
     return 0;
 }
 
-void printData( const char a[], const size_t rows, const size_t colls )
+/*void printData( const char strData[], const size_t rows, const size_t cols )
 {
-    assert( a != NULL );
+    assert( strData != NULL );
     
     for( int i = 0; i < rows; i++ )
     {
-        for( int j = 0; j < colls; j++ )
+        for( int j = 0; j < cols; j++ )
         {
-            putchar( a[i * colls + j] );
+            putchar( strData[i * cols + j] );
         }
         putchar( '\n' );
     }
 }
 
-void printData( const char a[] )
+void printData( const char strData[] )
 {
-    assert( a != NULL );
+    assert( strData != NULL );
 
-    int rows = a[0];
-    int colls = a[1];
+    int rows = strData[0];
+    int cols = strData[1];
     int gap = 2;
 
     for( int i = 0; i < rows; i++ )
     {
-        for( int j = 0; j < colls; j++ )
+        for( int j = 0; j < cols; j++ )
         {
-            putchar( a[i * colls + j + gap] );
+            putchar( strData[i * cols + j + gap] );
         }
-        putchar( '\n' );
     }
-}
+}*/
 
-void fscanData( FILE* fp, char a[], const size_t rows, const size_t colls )
+void fscanData( FILE* fp, char* strData[], char* buffer, const size_t rows )
 {
     assert( fp != NULL );
-    assert( a != NULL );
+    assert( strData != NULL );
 
     for( int i = 0; i < rows; i++ )
     {
-        if( fscanf( fp, "%s", a + i * colls ) != 1 )
-            return;
+        fgets( fp, buffer );
+
+        strData[i] = ( char* ) calloc( MyStrlen( buffer ) + 1, sizeof( char ) );
+
+        MyStrcpy( strData[i], buffer );
     }
 }
 
-void scanData( char a[], const size_t rows, const size_t colls )
+void fscanData( FILE* fp, char* strData[], char* buffer )
 {
-    assert( a != NULL );
+    assert( fp != NULL );
+    assert( strData != NULL );
 
-    fscanData( stdin, a, rows, colls );
+    size_t rows = 0;
+
+    fscanf( fp, "%d", &rows );
+
+    fgets( fp );
+
+    fscanData( fp, strData, buffer, rows );
 }
