@@ -16,12 +16,17 @@ void MyStrncat( char* dest, char* src, size_t count );
 
 int isNum( char ch );
 
-void fgets( FILE* fp, char* str );
+int fgets( FILE* fp, char* str );
 
-void fgets( FILE* fp );
+int fgetInt( FILE* fp );
+
+int MyStrcmp( const void* a, const void* b );
+
+int toLow( char ch );
+
+int isLetter( char ch );
 
 /*int fstrTabSkip( FILE* fp );
 
-int fgets( FILE* fp, char* s);
+int fgets( FILE* fp, char* s);*/
 
-int fgetInt( FILE* fp, char* str );*/

@@ -5,20 +5,21 @@
 
 //puts, strchr, strlen, strcpy, strncpy, strcat, strncat, fgets, strdup, getline
 
-int MyPuts( const char* str)
+int MyPuts( const char* str )
 {
-    assert( str != NULL);
+    assert( str != NULL );
+    
+    int nchar = 0;
 
-    for( size_t i; str[i]; i++ )
-        if( putchar( str[i] ) != 1 )
-            return EOF;
+    for( ; str[nchar]; nchar++ )
+        putchar( str[nchar] );
 
     printf( "\n" );
 
-    return 0;
+    return nchar;
 }
 
-char* MyStrchr( const char* str, int ch)
+char* MyStrchr( const char* str, int ch )
 {
     assert( str != NULL);
     // ( str )
@@ -29,7 +30,7 @@ char* MyStrchr( const char* str, int ch)
     return NULL;
 }
 
-size_t MyStrlen( const char* str)
+size_t MyStrlen( const char* str )
 {
     assert( str != NULL);
 
@@ -43,9 +44,9 @@ size_t MyStrlen( const char* str)
 
 char* MyStrcpy( char* dest, char* src )
 {
-    assert( dest != NULL);
-    assert( src != NULL);
-    assert( src != dest);
+    assert( dest != NULL );
+    assert( src != NULL );
+    assert( src != dest );
 
     while( *src )
         *dest++ = *src++;
@@ -63,8 +64,11 @@ void MyStrncpy( char* dest, char* src, size_t count )
 
     for( size_t i = 0; i < count; i++)
     {
-        if( !*src )  
+        if( !*src ) 
+        { 
             *dest++ = *src++;
+            putchar( '1' );
+        }
         else
         {
             for( int j = i; j < count; i++ )
@@ -82,6 +86,48 @@ void MyStrcat( char* dest, char* src )
     MyStrcpy( dest, src );
 }
 
+int MyStrcmp( const void* a, const void* b )
+{
+    char* ap = *( char** ) a;
+    char* bp = *( char** ) b;
+
+    size_t aSize = MyStrlen( ap );
+    size_t bSize = MyStrlen( bp );
+
+    for( int i = 1, j = 1; aSize >= i && bSize >= j ; )
+    {
+        if( !isLetter( ap[aSize - i] ) )
+        {
+            i++;
+
+            continue;
+        }
+
+        if( !isLetter( bp[bSize - j] ) )
+        {
+            j++;
+
+            continue;
+        }
+
+        if( toLow( ap[aSize - i] ) > toLow( bp[bSize - j] ) )
+            return 1;
+        else if( toLow( ap[aSize - i] ) < toLow( bp[bSize - j] ) )
+            return -1;
+
+        i++;
+        j++;
+    }
+    
+    if( aSize == bSize )
+        return 0;
+    if( aSize > bSize)
+        return 1;
+    else
+        return -1;
+}
+
+
 
 void MyStrncat( char* dest, char* src, size_t count )
 {
@@ -93,6 +139,21 @@ void MyStrncat( char* dest, char* src, size_t count )
     MyStrncpy( dest, src, count );
 }
 
+int fgets( FILE* fp, char* str )
+{
+    assert( fp != NULL );
+    assert( str != NULL );
+
+    size_t len = 0;
+
+    for( int ch = 0; ( ch = getc( fp ) ) != EOF && ch != '\n'; len++ )
+        *str++ = ch;
+    
+    *str = '\0';
+
+    return len;
+}
+
 int isNum( char ch )
 {
     if( ch <= '9' && ch >= '0' )
@@ -101,16 +162,53 @@ int isNum( char ch )
     return false;
 }
 
-void fgets( FILE* fp, char* str )
+int isLetter( char ch )
 {
-    for( int ch = 0; ( ch = getc( fp ) ) != EOF && ch != '\n'; )
-        *str++ = ch;
+    if( ch <= 'z' && ch >= 'a' ||
+        ch <= 'Z' && ch >= 'A' )
+        return 1;
     
-    *str = '\0';
+    return 0;
 }
 
-void fgets( FILE* fp )
+int toLow( char ch )
 {
-    for( int ch = 0; ( ch = getc( fp ) ) != EOF && ch != '\n'; )
+    if( isLetter( ch ) )
+        return ( ch - 'a' < 0 )? ch - 'A' + 'a' : ch;
+    
+    return -1;
+}
+
+int charToNum( char ch )
+{
+    return ch - '0';
+}
+
+int fskipTabs( FILE* fp )
+{
+    int ch = 0;
+
+    while( ( ch = getc( fp ) ) != EOF && ( ch == ' ' || ch == '\t' || ch == '\n' ) )
         ;
+
+    return ch;
+}
+
+int fgetInt( FILE* fp )
+{
+    int ch = fskipTabs( fp );
+    int sign = 1;
+    int number = 0;
+
+    if( ch == '-' )
+        sign = -1;
+    else if( isNum( ch ) )
+        number += charToNum( ch );
+    else
+        return NULL;
+     
+    while( isNum( ch = getc( fp ) ) )
+        number = number * 10 + charToNum( ch );
+    
+    return sign * number;
 }
