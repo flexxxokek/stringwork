@@ -5,13 +5,7 @@
 #include "constants.h"
 #include "stroki.h"
 #include "dataFuncs.h"
-
-void tapAnyKey( void )
-{
-    printf( "Tap any key to exit...\n");
-
-    getc( stdin );
-}
+#include "io.h"
 
 int main( void )
 {
@@ -19,7 +13,9 @@ int main( void )
     
     fillFileinf( &text );
 
-    qsort( text.strData, text.nlines, sizeof( char* ), MyStrcmp );
+    qsort( text.strData, text.nlines, sizeof( struct String ), MyReverseStrcmp );
+
+    myBubbleSort( text.strData, text.nlines, sizeof( struct String ), MyReverseStrcmp );
 
     printData( &text );
 
@@ -31,7 +27,7 @@ int main( void )
     
     freeFileinf( &text );
 
-    tapAnyKey();
+    tapEnter();
     
     return 0;
 }

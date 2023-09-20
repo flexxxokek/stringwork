@@ -2,6 +2,7 @@
 #include <assert.h>
 
 #include "stroki.h"
+#include "constants.h"
 
 //puts, strchr, strlen, strcpy, strncpy, strcat, strncat, fgets, strdup, getline
 
@@ -86,42 +87,39 @@ void MyStrcat( char* dest, char* src )
     MyStrcpy( dest, src );
 }
 
-int MyStrcmp( const void* a, const void* b )
+int MyReverseStrcmp( const void* a, const void* b )
 {
-    char* ap = *( char** ) a;
-    char* bp = *( char** ) b;
+    struct String ap = *( String* ) a;
+    struct String bp = *( String* ) b;
 
-    size_t aSize = MyStrlen( ap );
-    size_t bSize = MyStrlen( bp );
-
-    for( int i = 1, j = 1; aSize >= i && bSize >= j ; )
+    for( int i = 1, j = 1; ap.len >= i && bp.len >= j ; )
     {
-        if( !isLetter( ap[aSize - i] ) )
+        if( !isLetter( ap.ptr[ap.len - i] ) )
         {
             i++;
 
             continue;
         }
 
-        if( !isLetter( bp[bSize - j] ) )
+        if( !isLetter( bp.ptr[bp.len - j] ) )
         {
             j++;
 
             continue;
         }
 
-        if( toLow( ap[aSize - i] ) > toLow( bp[bSize - j] ) )
+        if( toLow( ap.ptr[ap.len - i] ) > toLow( bp.ptr[bp.len - j] ) )
             return 1;
-        else if( toLow( ap[aSize - i] ) < toLow( bp[bSize - j] ) )
+        else if( toLow( ap.ptr[ap.len - i] ) < toLow( bp.ptr[bp.len - j] ) )
             return -1;
 
         i++;
         j++;
     }
     
-    if( aSize == bSize )
+    if( ap.len == bp.len )
         return 0;
-    if( aSize > bSize)
+    if( ap.len > bp.len)
         return 1;
     else
         return -1;

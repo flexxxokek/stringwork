@@ -23,3 +23,5 @@ void fillFileinf( struct Fileinf* text );
 void printFileinfBuff( struct Fileinf* text );
 
 int getNlines( struct Fileinf* text );
+
+void myBubbleSort( void* arr, size_t len, size_t elSize, int ( *cmp )( const void* a, const void* b ) );

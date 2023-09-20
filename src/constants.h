@@ -9,6 +9,13 @@ enum FilePointerErrors
     FILE_POINTER_IS_NULL = 102, NO_PERMISSION_FOR_FILE = 404
 };
 
+struct String
+{
+    char* ptr;
+
+    size_t len;
+};
+
 struct Fileinf
 {
     char filename[MAX_FILE_NAME_LENGTH];
@@ -21,5 +28,5 @@ struct Fileinf
 
     char* buff;
 
-    char ** strData;
+    String* strData;
 };

@@ -7,12 +7,21 @@
 #include "constants.h"
 #include "dataFuncs.h"
 
+static void* pushVoidPtr( void* ptr, size_t bytes )
+{
+    return ( void* )( ( ( char* ) ptr ) + bytes );
+}
+
 void printData( const struct Fileinf* text )
 {
     assert( text->strData != NULL );
     
     for( int i = 0; i < text->nlines; i++ )
-        MyPuts( text->strData[i] );
+    {
+        printf( "%d ", text->strData[i].len );
+    
+        MyPuts( text->strData[i].ptr );
+    }
 }
 
 void getFilename( struct Fileinf* text )
@@ -22,17 +31,18 @@ void getFilename( struct Fileinf* text )
     fgets( stdin, text->filename );
 }
 
-void swapp( void** a, void** b )
+static void swap( void* a, void* b, size_t elSize )
 {
-    void* temp = *a;
-    *a = *b;
-    *b = temp;
+    void* temp = calloc( 1, elSize );
+    memcpy( temp, a, elSize );
+
+    memcpy( a, b, elSize );
+
+    memcpy( b, temp, elSize );
+
+    free( temp );
 }
 
-/*
-1. strDate create
-2. strData fill
-*/
 void fscanData( FILE* fp, char* strData[], const size_t rows )
 {
     assert( fp != NULL );
@@ -64,17 +74,17 @@ void fscanData( FILE* fp, char* strData[] )
     fscanData( fp, strData, rows );
 }
 
-void freeData( const char ** strData )
+void freeData( char ** strData )
 {
     assert( strData != NULL );
 
-    const char* p = NULL;
-
     for( int i = 0; i < MAX_STR_NUM; i++ )
     {
-        p = *strData++;
-        
-        free( ( void* ) p );
+        free( *strData );
+
+        *strData = nullptr;
+
+        strData++;
     }
 }
 
@@ -125,9 +135,9 @@ void fileToBuff( struct Fileinf* text )
     }
 }
 
-int parseBuff( struct Fileinf* text )
+int parseBuff( struct Fileinf* text ) // нулевой эл. 
 {
-    text->strData[0] = text->buff;
+    text->strData[0].ptr = text->buff;
 
     int nlines = 1;
 
@@ -135,7 +145,9 @@ int parseBuff( struct Fileinf* text )
     {
         if( text->buff[i] == '\n' )
         {
-            text->strData[nlines] = text->buff + i + 1;
+            text->strData[nlines - 1].len = ( size_t )( text->buff + i - text->strData[nlines - 1].ptr );
+
+            text->strData[nlines].ptr = text->buff + i + 1;
 
             nlines++;
 
@@ -143,7 +155,7 @@ int parseBuff( struct Fileinf* text )
         }
     }
 
-    text->nlines = nlines;
+    text->strData[nlines - 1].len = ( size_t )( text->buff + text->trueSize - text->strData[nlines - 1].ptr );
 
     return text->trueSize;
 }
@@ -164,22 +176,22 @@ void fillFileinf( struct Fileinf* text )
 
     getNlines( text );
 
-    text->strData = ( char** ) calloc( text->nlines, sizeof( char* ) );
+    text->strData = ( struct String* ) calloc( text->nlines, sizeof( String* ) );
 
     parseBuff( text );
 }
 
 void printFileinfBuff( struct Fileinf* text )
 {
-    for( int i = 0, k = 0; i < text->nlines; i++ )
+    for( int i = 0, currPos = 0; i < text->nlines; i++ )
     {
-        k += MyPuts( text->buff + k ) + 1;
+        currPos += MyPuts( text->buff + currPos ) + 1;
     }
 }
 
 int getNlines( struct Fileinf* text )
 {
-    int nlines = 0;
+    int nlines = 1;
 
     for( int i = 0; i < text->trueSize; i++ )
         if( text->buff[i] == '\n' )
@@ -188,4 +200,12 @@ int getNlines( struct Fileinf* text )
     text->nlines = nlines;
     
     return nlines;
+}
+
+void myBubbleSort( void* arr, size_t len, size_t elSize, int ( *cmp )( const void* a, const void* b ) )
+{
+    for( int i = 0; i < 1; i++ )
+        for( int j = 0; j < len - 1; j++ )
+            if( cmp( pushVoidPtr( arr, j * elSize ), pushVoidPtr( arr, ( j + 1 ) * elSize ) ) > 0 )
+                swap( pushVoidPtr( arr, j * elSize ), pushVoidPtr( arr, ( j + 1 ) * elSize ), elSize );
 }

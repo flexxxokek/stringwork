@@ -20,7 +20,7 @@ int fgets( FILE* fp, char* str );
 
 int fgetInt( FILE* fp );
 
-int MyStrcmp( const void* a, const void* b );
+int MyReverseStrcmp( const void* a, const void* b );
 
 int toLow( char ch );
 
