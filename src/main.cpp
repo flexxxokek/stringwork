@@ -28,6 +28,6 @@ int main( void )
     freeFileinf( &text );
 
     tapEnter();
-    
+
     return 0;
 }

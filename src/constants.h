@@ -4,6 +4,15 @@ const int MAX_FLAG_LENGTH = 16;
 const int MAX_FILE_NAME_LENGTH = 16;
 const int FLAG_NUM = 1;
 
+enum FILEINF_ERRORS
+{
+    FILE_NAME_IS_NULL = 123,
+    FILE_SIZE_IS_NULL = 321,
+    FILE_BUFF_IS_NULL = 231,
+    FILE_STRDATA_IS_NULL = 213,
+    ALLRIGHT = 0
+};
+
 enum FilePointerErrors
 {
     FILE_POINTER_IS_NULL = 102, NO_PERMISSION_FOR_FILE = 404
@@ -24,7 +33,7 @@ struct Fileinf
 
     size_t trueSize;
 
-    unsigned int nlines;
+    size_t nlines;
 
     char* buff;
 

@@ -1,3 +1,5 @@
+#include "C:\Users\mvideo\Desktop\TX\txlib.h"
+
 #include <stdio.h>
 #include <assert.h>
 #include <sys\stat.h>
@@ -6,6 +8,16 @@
 #include "stroki.h"
 #include "constants.h"
 #include "dataFuncs.h"
+
+static FILEINF_ERRORS FileinfVerify( Fileinf* text )
+{
+    if( text->filename == nullptr ) return FILE_NAME_IS_NULL;
+    if( text->buff == nullptr ) return FILE_BUFF_IS_NULL;
+    if( text->size == 0 ) return FILE_SIZE_IS_NULL;
+    if( text->strData == nullptr ) return FILE_STRDATA_IS_NULL;
+
+    return ALLRIGHT;
+}
 
 static void* pushVoidPtr( void* ptr, size_t bytes )
 {
@@ -16,9 +28,9 @@ void printData( const struct Fileinf* text )
 {
     assert( text->strData != NULL );
     
-    for( int i = 0; i < text->nlines; i++ )
+    for( size_t i = 0; i < text->nlines; i++ )
     {
-        printf( "%d ", text->strData[i].len );
+        printf( "%zu ", text->strData[i].len );
     
         MyPuts( text->strData[i].ptr );
     }
@@ -26,21 +38,31 @@ void printData( const struct Fileinf* text )
 
 void getFilename( struct Fileinf* text )
 {
-    printf( "Enter file name: ");
+    printf( "Enter file name: " );
 
     fgets( stdin, text->filename );
 }
 
 static void swap( void* a, void* b, size_t elSize )
 {
-    void* temp = calloc( 1, elSize );
-    memcpy( temp, a, elSize );
+    long long int temp = 0;
 
-    memcpy( a, b, elSize );
+    size_t i = 0;
 
-    memcpy( b, temp, elSize );
+    for( ; i < elSize / sizeof( long long int ); i++ )
+    {
+        memcpy( &temp, pushVoidPtr( a, elSize * i ), elSize );
 
-    free( temp );
+        memcpy( pushVoidPtr( a, elSize * i ), pushVoidPtr( b, elSize * i ), elSize );
+
+        memcpy( pushVoidPtr( b, elSize * i ), &temp, elSize );
+    }
+
+    memcpy( &temp, pushVoidPtr( a, elSize * i ), elSize % sizeof( long long int ) );
+
+    memcpy( pushVoidPtr( a, elSize * i ), pushVoidPtr( b, elSize * i ), elSize % sizeof( long long int ) );
+
+    memcpy( pushVoidPtr( b, elSize * i ), &temp, elSize % sizeof( long long int ) );
 }
 
 void fscanData( FILE* fp, char* strData[], const size_t rows )
@@ -50,13 +72,13 @@ void fscanData( FILE* fp, char* strData[], const size_t rows )
 
     char buffer[MAX_STR_LENGTH] = {};
 
-    for( int i = 0; i < rows; i++ )
+    for( size_t i = 0; i < rows; i++ )
     {
         size_t len = fgets( fp, buffer );
 
         strData[i] = ( char* ) calloc( MyStrlen( buffer ) + 1, sizeof( char ) );
 
-        printf( "%d", len );
+        printf( "%zu", len );
 
         MyStrncpy( strData[i], buffer, len + 1 );
     }
@@ -69,24 +91,24 @@ void fscanData( FILE* fp, char* strData[] )
 
     size_t rows = 0;
 
-    fscanf( fp, "%d", &rows );
+    fscanf( fp, "%zu", &rows );
 
     fscanData( fp, strData, rows );
 }
 
-void freeData( char ** strData )
+/*void freeData( const char ** strData )
 {
     assert( strData != NULL );
 
     for( int i = 0; i < MAX_STR_NUM; i++ )
     {
-        free( *strData );
+        free( ( void* ) *strData );
 
         *strData = nullptr;
 
         strData++;
     }
-}
+}*/
 
 static int checkFilePointer( FILE* fp, int* err = 0 )
 {
@@ -135,13 +157,13 @@ void fileToBuff( struct Fileinf* text )
     }
 }
 
-int parseBuff( struct Fileinf* text ) // нулевой эл. 
+size_t parseBuff( struct Fileinf* text )
 {
     text->strData[0].ptr = text->buff;
 
     int nlines = 1;
 
-    for( int i = 0; i < text->trueSize; i++ )
+    for( size_t i = 0; i < text->trueSize; i++ )
     {
         if( text->buff[i] == '\n' )
         {
@@ -176,24 +198,24 @@ void fillFileinf( struct Fileinf* text )
 
     getNlines( text );
 
-    text->strData = ( struct String* ) calloc( text->nlines, sizeof( String* ) );
+    text->strData = ( struct String* ) calloc( text->nlines, sizeof( String ) );
 
     parseBuff( text );
 }
 
 void printFileinfBuff( struct Fileinf* text )
 {
-    for( int i = 0, currPos = 0; i < text->nlines; i++ )
+    for( size_t i = 0, currPos = 0; i < text->nlines; i++ )
     {
         currPos += MyPuts( text->buff + currPos ) + 1;
     }
 }
 
-int getNlines( struct Fileinf* text )
+size_t getNlines( struct Fileinf* text )
 {
-    int nlines = 1;
+    size_t nlines = 1;
 
-    for( int i = 0; i < text->trueSize; i++ )
+    for( size_t i = 0; i < text->trueSize; i++ )
         if( text->buff[i] == '\n' )
             nlines++;
 
@@ -204,8 +226,8 @@ int getNlines( struct Fileinf* text )
 
 void myBubbleSort( void* arr, size_t len, size_t elSize, int ( *cmp )( const void* a, const void* b ) )
 {
-    for( int i = 0; i < 1; i++ )
-        for( int j = 0; j < len - 1; j++ )
+    for( size_t i = 0; i < 1; i++ )
+        for( size_t j = 0; j < len - 1; j++ )
             if( cmp( pushVoidPtr( arr, j * elSize ), pushVoidPtr( arr, ( j + 1 ) * elSize ) ) > 0 )
                 swap( pushVoidPtr( arr, j * elSize ), pushVoidPtr( arr, ( j + 1 ) * elSize ), elSize );
 }
